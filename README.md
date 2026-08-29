@@ -11,6 +11,8 @@ Single-customer custom jewelry collaboration portal built for Cloudflare Pages +
 - Diamond lines support Shape, Weight, whether weight is total or per-stone, # Stones, Color/Clarity, Measurements.
 - Manual status control across: Project Received → Designs Generated → Designs In Review → Project Approved → In Production → Shivani Gems QC → Shipped → Delivered. The only automatic status change is customer approval → Project Approved.
 - See and respond to customer comments on every proposal.
+- Leave proposal pricing blank while a quote is pending, flag prices that include Shivani-provided diamonds, and copy diamond lines from another proposal in the same project.
+- Record each diamond line as Natural, Lab Grown, or unspecified.
 
 ### Customer
 - Dashboard of project cards with project name, creation date, proposal count, requested delivery date, and current status.
@@ -93,6 +95,8 @@ On the Pages project:
 ]
 ```
 
+Paste the array itself as the value. Do not paste the variable name after the closing `]`, and use real line breaks (or keep the JSON on one line) rather than typing literal `\\n` sequences. The API also normalizes those two common copy/paste mistakes, but clean JSON is recommended.
+
 Use the exact passcodes from your project brief when entering this secret in Cloudflare. They are intentionally not committed into GitHub.
 
 ### 7. Redeploy
@@ -105,6 +109,8 @@ The first API request will:
 4. PBKDF2-hash each passcode with a unique salt and store only the hash in D1.
 
 After that, the bootstrap secret is no longer needed for normal logins, though leaving it configured is fine because bootstrapping runs only when the user table is empty.
+
+If login reports a server error, the message shown beneath the form includes the underlying setup problem. The most common causes are a missing D1 binding named exactly `DB`, configuring the binding or secret for Preview instead of Production, or not redeploying after changing the environment configuration. Do not hard-code usernames or passcodes into `public/` files: those files are delivered to every visitor.
 
 ## Local development (optional)
 
@@ -132,7 +138,7 @@ Then use Wrangler Pages dev with local D1/R2 bindings. For production deployment
 - Internal project notes are stripped from the customer API response.
 
 ## V1 intentionally not included yet
-- Email notifications / HubSpot / Gmail notifications
+- Gmail-specific notification integration (notifications use HubSpot instead)
 - Multiple customer organizations/accounts
 - Password reset flow
 - Fine-grained audit history / notification center
@@ -140,3 +146,20 @@ Then use Wrangler Pages dev with local D1/R2 bindings. For production deployment
 - Production invoice/payment handling
 
 Those are good V2 additions once the single-customer workflow is validated.
+
+## HubSpot notifications
+
+The API submits portal events to the HubSpot form for portal `45715522`, form `3799d2a4-7876-4b70-9c14-054dcff947c2`, using `doug@uniqjewelry.com` as the enrolled contact. The supported event types are `design_created`, `comment_created`, `design_approved`, and `status_updated`. HubSpot workflows remain responsible for branching and sending customer or internal emails.
+
+The defaults can be changed without a code edit by adding any of these Cloudflare environment variables and redeploying:
+
+```dotenv
+HUBSPOT_PORTAL_ID=45715522
+HUBSPOT_FORM_ID=3799d2a4-7876-4b70-9c14-054dcff947c2
+HUBSPOT_CUSTOMER_EMAIL=doug@uniqjewelry.com
+PORTAL_URL=https://shivanicustom.pages.dev
+```
+
+Notification delivery is best-effort: HubSpot failures are logged but do not undo a successfully saved comment, proposal, approval, or status update. The HubSpot form must contain fields matching the `portal_*` internal property names used by the API, and its workflow must allow re-enrollment for every submission.
+
+When HubSpot rejects a submission, the portal shows the rejection beneath the successful action for ten seconds. This distinguishes delivery/configuration failures from workflow problems: if no warning appears, check the HubSpot form's submission history and workflow enrollment history; if a warning appears, its response text identifies the field or form setting HubSpot rejected.

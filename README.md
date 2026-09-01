@@ -6,17 +6,20 @@ Single-customer custom jewelry collaboration portal built for Cloudflare Pages +
 
 ### Admin
 - Create projects with name, project type, client/PO reference, requested delivery date, metal, size/dimensions, full brief, supplied stones/materials, internal notes, and multiple reference images.
+- Filter the project dashboard by production stage or switch to a color-coded timeline/kanban view grouped by stage.
 - Add multiple design proposals inside each project.
-- Each proposal supports multiple images, free-text metal, finished-piece price, customer-facing notes, and unlimited diamond lines.
+- Each proposal supports multiple images, free-text metal, finished-piece price, customer-facing notes, unlimited diamond lines, and finding lines for chains, earring backs, or other components.
 - Diamond lines support Shape, Weight, whether weight is total or per-stone, # Stones, Color/Clarity, Measurements.
 - Manual status control across: Project Received → Designs Generated → Designs In Review → Project Approved → In Production → Shivani Gems QC → Shipped → Delivered. The only automatic status change is customer approval → Project Approved.
-- See and respond to customer comments on every proposal.
-- Leave proposal pricing blank while a quote is pending, flag prices that include Shivani-provided diamonds, and copy diamond lines from another proposal in the same project.
+- See and respond to customer comments on every proposal, with comment times displayed in each viewer's browser-local time.
+- Leave proposal pricing blank while a quote is pending, separately flag prices that include Shivani-provided diamonds or chain/findings, and copy diamond lines from another proposal in the same project.
+- Edit any proposal after creation, including the approved proposal, without disturbing its approval state.
 - Record each diamond line as Natural, Lab Grown, or unspecified.
 - Permanently delete a project and its associated proposals, comments, database file records, and private R2 uploads.
 
 ### Customer
 - Dashboard of project cards with project name, creation date, proposal count, requested delivery date, and current status.
+- Use distinct stage colors, stage filtering, and the timeline/kanban view to scan project progress quickly.
 - Full project page with a progress tracker and collapsible reference-image gallery.
 - Proposal cards with thumbnail, quoted price, total carat weight, metal and comment count.
 - Full proposal details with image gallery and complete diamond breakdown.
@@ -52,7 +55,7 @@ In Cloudflare Dashboard:
 - Workers & Pages → D1 SQL Database → Create database
 - Suggested name: `shivani-custom-projects`
 
-You do **not** have to manually run `schema.sql`; the API creates its tables automatically. The file is there for reference/manual use.
+You do **not** have to manually run `schema.sql`; after deployment, the API creates new tables and adds newly introduced columns automatically on the first request. The file is there for reference/manual use, including for a brand-new database.
 
 ### 2. Create the R2 bucket
 - R2 Object Storage → Create bucket
@@ -143,7 +146,7 @@ Then use Wrangler Pages dev with local D1/R2 bindings. For production deployment
 - Multiple customer organizations/accounts
 - Password reset flow
 - Fine-grained audit history / notification center
-- Proposal editing/deletion UI
+- Proposal deletion UI
 - Production invoice/payment handling
 
 Those are good V2 additions once the single-customer workflow is validated.
